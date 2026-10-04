@@ -2,7 +2,7 @@ import express from 'express';
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { getEnvStatus, updateEnvVariables, startGuidedLogin, cancelGuidedLogin, verifyUntappdCredentials } from './lib/auth-service.mjs';
+import { getEnvStatus, updateEnvVariables, verifyUntappdCredentials } from './lib/auth-service.mjs';
 import { isScraperRunning, getCurrentRunType, startScraper, stopScraper } from './lib/scraper-runner.mjs';
 import { matchSystembolaget } from './lib/systembolaget-matcher.mjs';
 import { syncSystembolagetCatalog } from './lib/systembolaget-sync.mjs';
@@ -146,39 +146,6 @@ app.get('/api/status', (req, res) => {
 });
 
 // Authentication endpoints
-app.post('/api/auth/guided-login', async (req, res) => {
-  try {
-    broadcastLog('Starting Guided Untappd Login in browser...', 'info');
-    startGuidedLogin({
-      logger: (msg) => broadcastLog(msg, 'info'),
-      onComplete: ({ username }) => {
-        broadcastLog(`✨ Login completed successfully for @${username}!`, 'success');
-        broadcastEvent('status', getStats());
-      },
-      onError: (err) => {
-        broadcastLog(`❌ Login canceled or failed: ${err.message}`, 'error');
-        broadcastEvent('guided_login_error', { message: err.message });
-        broadcastEvent('status', getStats());
-      },
-    }).catch((err) => {
-      broadcastLog(`❌ Error starting login browser: ${err.message}`, 'error');
-      broadcastEvent('guided_login_error', { message: err.message });
-    });
-
-    res.json({ ok: true, message: 'Browser launched' });
-  } catch (err) {
-    broadcastLog(`Error launching login browser: ${err.message}`, 'error');
-    broadcastEvent('guided_login_error', { message: err.message });
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-
-app.post('/api/auth/cancel-login', (req, res) => {
-  const canceled = cancelGuidedLogin();
-  broadcastLog('Guided login was canceled.', 'warn');
-  res.json({ ok: true, canceled });
-});
-
 app.post('/api/auth/save-manual', (req, res) => {
   try {
     const { username, cookie, mapboxKey } = req.body;

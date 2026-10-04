@@ -73,44 +73,75 @@
       </div>
       <h2 data-i18n="gateTitle">Connect Your Untappd Account</h2>
       <p class="gate-desc" data-i18n="gateDesc">
-        Sign in to your Untappd account to unlock scraping, automatic Systembolaget matching, and findings exploration.
+        Enter your Untappd username and session cookie to sync check-ins and match beers with Systembolaget.
       </p>
 
-      <div class="gate-actions-row">
-        <button id="btnGateGuidedLogin" class="btn btn-primary btn-large">
-          <span>✨</span> <span data-i18n="btnLoginBrowser">Log in with Browser</span>
-        </button>
-        <button id="btnGateCancelLogin" class="btn btn-danger btn-large" style="display: none;" data-i18n="btnCancelLogin">
-          Cancel Login
-        </button>
-        <button id="btnGateToggleManual" style="display: none;"></button>
+      <!-- 3-STEP VISUAL COOKIE GUIDE -->
+      <div class="cookie-guide-box">
+        <div class="cookie-guide-header">
+          <span class="guide-header-icon">🔑</span>
+          <span class="guide-header-title" data-i18n="guideTitle">How to get your session cookie in 3 simple steps:</span>
+        </div>
+        
+        <div class="guide-steps-list">
+          <div class="guide-step-item">
+            <div class="step-badge-num">1</div>
+            <div class="step-content">
+              <strong data-i18n="step1Title">Log in to Untappd</strong>
+              <p data-i18n-html="step1Desc">Open <a href="https://untappd.com" target="_blank" rel="noopener">untappd.com</a> in your regular browser (Chrome, Edge, Firefox, Safari) and make sure you are signed in.</p>
+            </div>
+          </div>
+
+          <div class="guide-step-item">
+            <div class="step-badge-num">2</div>
+            <div class="step-content">
+              <strong data-i18n="step2Title">Open Developer Tools (F12)</strong>
+              <p data-i18n-html="step2Desc">Press <kbd>F12</kbd> (or right-click ➔ <em>Inspect</em>), switch to the <b>Network</b> tab, and refresh the page (<kbd>F5</kbd>).</p>
+            </div>
+          </div>
+
+          <div class="guide-step-item">
+            <div class="step-badge-num">3</div>
+            <div class="step-content">
+              <strong data-i18n="step3Title">Copy the Cookie Header</strong>
+              <p data-i18n-html="step3Desc">Click the top request (e.g. <code>home</code>), scroll to <b>Request Headers</b>, right-click <code>Cookie:</code> and select <b>Copy value</b>.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="guide-ext-tip">
+          <span class="tip-sparkle">💡</span>
+          <span data-i18n-html="guideTip"><b>Alternative:</b> Use a browser extension like <a href="https://cookie-editor.com" target="_blank" rel="noopener">Cookie-Editor</a> to export the cookie in 1 click.</span>
+        </div>
       </div>
 
       <!-- Credentials Form in Login Gate -->
-      <div id="gateManualAuthArea" class="manual-auth-box gate-manual-box" style="margin-top: 20px;">
-        <div style="font-weight: 600; font-size: 0.95rem; margin-bottom: 12px; color: var(--text-main); text-align: left;" data-i18n="orPasteDirectly">— Or Enter Credentials Directly:</div>
+      <div id="gateManualAuthArea" class="manual-auth-box gate-manual-box">
         <div class="form-row">
           <label for="gateInputUsername" data-i18n="labelUsername">Untappd Username:</label>
-          <input type="text" id="gateInputUsername" placeholder="e.g. your_username" class="form-input">
+          <input type="text" id="gateInputUsername" placeholder="e.g. your_username" class="form-input" autocomplete="username">
         </div>
         <div class="form-row">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
             <label for="gateInputCookie" data-i18n="labelCookie" style="margin-bottom: 0;">Cookie Header String:</label>
-            <button type="button" id="btnPasteClipboard" class="btn btn-secondary btn-small" style="padding: 3px 10px; font-size: 0.8rem; cursor: pointer;" data-i18n="btnPasteClipboard">📋 Paste from Clipboard</button>
+            <button type="button" id="btnPasteClipboard" class="btn btn-secondary btn-small" style="padding: 4px 12px; font-size: 0.8rem; cursor: pointer;">
+              <span data-i18n="btnPasteClipboard">📋 Paste from Clipboard</span>
+            </button>
           </div>
-          <textarea id="gateInputCookie" rows="3" placeholder="Paste your untappd.com cookie string here..." class="form-textarea"></textarea>
-          <div class="form-hint" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 6px; line-height: 1.4; text-align: left;" data-i18n="cookieHowTo">
-            💡 How to get your cookie: Open untappd.com in your browser, press F12 (DevTools) ➔ Network tab ➔ click any request ➔ copy the "cookie" header value.
-          </div>
+          <textarea id="gateInputCookie" rows="3" placeholder="Paste your untappd.com cookie string here..." class="form-textarea" spellcheck="false"></textarea>
         </div>
-        <div class="action-row" style="margin-top: 10px;">
-          <button id="btnGateSaveManual" class="btn btn-success" data-i18n="btnSaveCreds">Save Credentials</button>
-          <button id="btnGateVerify" class="btn btn-secondary">🔍 <span data-i18n="btnTestConn">Test Connection</span></button>
+        <div class="action-row" style="margin-top: 14px; gap: 10px;">
+          <button id="btnGateSaveManual" class="btn btn-primary btn-large">
+            <span>💾</span> <span data-i18n="btnSaveCreds">Save Credentials</span>
+          </button>
+          <button id="btnGateVerify" class="btn btn-secondary btn-large">
+            <span>🔍</span> <span data-i18n="btnTestConn">Test Connection</span>
+          </button>
         </div>
       </div>
 
-      <div class="hint-text" id="gateLoginHint" data-i18n="loginHintDefault">
-        Click "Log in with Browser" to open an Untappd login window, or paste your cookie directly above.
+      <div class="hint-text" id="gateLoginHint" data-i18n-html="loginHintDefault" style="margin-top: 18px; text-align: center;">
+        🔒 Credentials are saved locally in your <code>.env</code> file on your computer and never shared.
       </div>
     </div>
 

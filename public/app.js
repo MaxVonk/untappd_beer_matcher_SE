@@ -13,19 +13,21 @@ const TRANSLATIONS = {
     cardMatchedTitle: 'Matched Beers',
     clickToBrowse: 'Click to browse findings ➔',
     gateTitle: 'Connect Your Untappd Account',
-    gateDesc: 'Sign in to your Untappd account to unlock scraping, automatic Systembolaget matching, and findings exploration.',
-    btnLoginBrowser: 'Log in with Browser',
-    btnCancelLogin: 'Cancel Login',
-    btnPasteManually: 'Paste Manually',
-    btnHideForm: '▲ Hide Form',
-    orPasteDirectly: '— Or Enter Credentials Directly:',
+    gateDesc: 'Enter your Untappd username and session cookie to sync check-ins and match beers with Systembolaget.',
+    guideTitle: 'How to get your session cookie in 3 simple steps:',
+    step1Title: 'Log in to Untappd',
+    step1Desc: 'Open <a href="https://untappd.com" target="_blank" rel="noopener">untappd.com</a> in your regular browser (Chrome, Edge, Firefox, Safari) and make sure you are signed in.',
+    step2Title: 'Open Developer Tools (F12)',
+    step2Desc: 'Press <kbd>F12</kbd> (or right-click ➔ <em>Inspect</em>), switch to the <b>Network</b> tab, and refresh the page (<kbd>F5</kbd>).',
+    step3Title: 'Copy the Cookie Header',
+    step3Desc: 'Click the top request (e.g. <code>home</code>), scroll to <b>Request Headers</b>, right-click <code>Cookie:</code> and select <b>Copy value</b>.',
+    guideTip: '<b>Alternative:</b> Use a browser extension like <a href="https://cookie-editor.com" target="_blank" rel="noopener">Cookie-Editor</a> to export the cookie in 1 click.',
     labelUsername: 'Untappd Username:',
     labelCookie: 'Cookie Header String:',
-    cookieHowTo: '💡 How to get your cookie: Open untappd.com in your browser, press F12 (DevTools) ➔ Network tab ➔ click any request ➔ copy the "cookie" header value.',
     btnPasteClipboard: '📋 Paste from Clipboard',
     btnSaveCreds: 'Save Credentials',
     btnTestConn: 'Test Connection',
-    loginHintDefault: 'Click "Log in with Browser" to open an Untappd login window, or paste your cookie directly above.',
+    loginHintDefault: '🔒 Credentials are saved locally in your <code>.env</code> file on your computer and never shared.',
     heroBadge: '⚡ 1-Click Automated Sync',
     heroTitle: 'Sync & Match Untappd with Systembolaget',
     heroDesc: 'Scrapes your latest check-ins from Untappd and automatically matches them with Systembolaget\'s current catalog in one step.',
@@ -85,19 +87,21 @@ const TRANSLATIONS = {
     cardMatchedTitle: 'Matchade öl',
     clickToBrowse: 'Klicka för att bläddra ➔',
     gateTitle: 'Anslut ditt Untappd-konto',
-    gateDesc: 'Logga in på ditt Untappd-konto för att låsa upp skrapning, automatisk matchning mot Systembolaget och ölutforskaren.',
-    btnLoginBrowser: 'Logga in med webbläsare',
-    btnCancelLogin: 'Avbryt inloggning',
-    btnPasteManually: 'Klistra in manuellt',
-    btnHideForm: '▲ Dölj formulär',
-    orPasteDirectly: '— Eller fyll i uppgifter direkt:',
+    gateDesc: 'Fyll i ditt Untappd-användarnamn och session-cookie för att synka incheckningar och matcha öl mot Systembolaget.',
+    guideTitle: 'Så hämtar du din session-cookie i 3 enkla steg:',
+    step1Title: 'Logga in på Untappd',
+    step1Desc: 'Öppna <a href="https://untappd.com" target="_blank" rel="noopener">untappd.com</a> i din vanliga webbläsare (Chrome, Edge, Firefox, Safari) och se till att du är inloggad.',
+    step2Title: 'Öppna utvecklarverktygen (F12)',
+    step2Desc: 'Tryck <kbd>F12</kbd> (eller högerklicka ➔ <em>Inspektera</em>), välj fliken <b>Nätverk</b> (Network) och ladda om sidan (<kbd>F5</kbd>).',
+    step3Title: 'Kopiera Cookie-headern',
+    step3Desc: 'Klicka på översta anropet (t.ex. <code>home</code>), scrolla till <b>Request Headers</b>, högerklicka på <code>Cookie:</code> och välj <b>Kopiera värde</b> (Copy value).',
+    guideTip: '<b>Alternativ:</b> Använd ett webbläsartillägg som <a href="https://cookie-editor.com" target="_blank" rel="noopener">Cookie-Editor</a> för att kopiera kakan med 1 klick.',
     labelUsername: 'Untappd användarnamn:',
     labelCookie: 'Cookie-sträng:',
-    cookieHowTo: '💡 Hur du hittar din cookie: Öppna untappd.com i din webbläsare, tryck F12 (DevTools) ➔ fliken Nätverk (Network) ➔ klicka på en förfrågan ➔ kopiera "cookie"-headern.',
     btnPasteClipboard: '📋 Klistra in från urklipp',
     btnSaveCreds: 'Spara uppgifter',
     btnTestConn: 'Testa anslutning',
-    loginHintDefault: 'Klicka "Logga in med webbläsare" för att öppna Untappd, eller klistra in kakan direkt ovanför.',
+    loginHintDefault: '🔒 Uppgifterna sparas lokalt i din <code>.env</code>-fil på datorn och delas aldrig externt.',
     heroBadge: '⚡ Automatisk 1-klicks-synk',
     heroTitle: 'Synka & matcha Untappd mot Systembolaget',
     heroDesc: 'Skrapar dina senaste incheckningar från Untappd och matchar dem automatiskt mot Systembolagets sortiment i ett enda steg.',
@@ -181,9 +185,6 @@ const globalStatusBadge = document.getElementById('globalStatusBadge');
 const globalStatusText = document.getElementById('globalStatusText');
 
 // Login Gate Elements
-const btnGateGuidedLogin = document.getElementById('btnGateGuidedLogin');
-const btnGateCancelLogin = document.getElementById('btnGateCancelLogin');
-const btnGateToggleManual = document.getElementById('btnGateToggleManual');
 const gateManualAuthArea = document.getElementById('gateManualAuthArea');
 const gateInputUsername = document.getElementById('gateInputUsername');
 const gateInputCookie = document.getElementById('gateInputCookie');
@@ -245,6 +246,11 @@ function applyLanguage() {
   document.querySelectorAll('[data-i18n]').forEach((el) => {
     const key = el.getAttribute('data-i18n');
     el.textContent = t(key);
+  });
+
+  document.querySelectorAll('[data-i18n-html]').forEach((el) => {
+    const key = el.getAttribute('data-i18n-html');
+    el.innerHTML = t(key);
   });
 
   beerSearchInput.placeholder = t('searchPlaceholder');
@@ -512,11 +518,7 @@ function initSSE() {
   eventSource.addEventListener('guided_login_error', (event) => {
     try {
       const data = JSON.parse(event.data);
-      btnGateGuidedLogin.disabled = false;
-      btnGateCancelLogin.style.display = 'none';
-      gateLoginHint.textContent = t('loginHintDefault');
-      gateLoginHint.style.color = '';
-      showToast('Login Error', data.message || 'Browser login failed.', 'error');
+      showToast('Login Error', data.message || 'Login failed.', 'error');
     } catch {}
   });
 
@@ -662,38 +664,6 @@ btnRunMatcher.addEventListener('click', async () => {
 // ========================================================
 // LOGIN GATE ACTIONS
 // ========================================================
-btnGateGuidedLogin.addEventListener('click', async () => {
-  btnGateGuidedLogin.disabled = true;
-  btnGateCancelLogin.style.display = 'inline-flex';
-  gateLoginHint.innerHTML = currentLang === 'sv'
-    ? '🌐 <b>Webbläsare startas...</b> Logga in på Untappd i fönstret som öppnas. När du har loggat in sparas din session automatiskt!'
-    : '🌐 <b>Browser window launching...</b> Log in to Untappd in the window that opens. Once logged in, your session is captured automatically!';
-  gateLoginHint.style.color = 'var(--text-main)';
-
-  showToast(
-    currentLang === 'sv' ? 'Startar webbläsare' : 'Launching Browser',
-    currentLang === 'sv' ? 'Öppnar Untappd. Logga in i fönstret...' : 'Opening Untappd window. Please log in there...',
-    'info',
-    7000
-  );
-
-  try {
-    const res = await fetch('/api/auth/guided-login', { method: 'POST' });
-    const data = await res.json();
-    if (!data.ok) {
-      showToast('Login Error', data.error || 'Failed to start browser.', 'error');
-      btnGateGuidedLogin.disabled = false;
-      btnGateCancelLogin.style.display = 'none';
-      gateLoginHint.textContent = t('loginHintDefault');
-    }
-  } catch (err) {
-    showToast('Login Error', err.message, 'error');
-    btnGateGuidedLogin.disabled = false;
-    btnGateCancelLogin.style.display = 'none';
-    gateLoginHint.textContent = t('loginHintDefault');
-  }
-});
-
 if (btnPasteClipboard) {
   btnPasteClipboard.addEventListener('click', async () => {
     try {
@@ -708,21 +678,6 @@ if (btnPasteClipboard) {
     }
   });
 }
-
-btnGateCancelLogin.addEventListener('click', async () => {
-  await fetch('/api/auth/cancel-login', { method: 'POST' });
-  btnGateGuidedLogin.disabled = false;
-  btnGateCancelLogin.style.display = 'none';
-  gateLoginHint.textContent = t('loginHintDefault');
-  gateLoginHint.style.color = '';
-  showToast('Canceled', currentLang === 'sv' ? 'Inloggningen avbröts.' : 'Guided login was canceled.', 'warn');
-});
-
-btnGateToggleManual.addEventListener('click', () => {
-  const isHidden = gateManualAuthArea.style.display === 'none';
-  gateManualAuthArea.style.display = isHidden ? 'block' : 'none';
-  btnGateToggleManual.textContent = isHidden ? t('btnHideForm') : `✏️ ${t('btnPasteManually')}`;
-});
 
 btnGateSaveManual.addEventListener('click', async () => {
   const username = gateInputUsername.value.trim();
