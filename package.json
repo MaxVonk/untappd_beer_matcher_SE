@@ -1,5 +1,5 @@
 {
-  "name": "untapped_beer_matcher_se",
+  "name": "untappd_beer_matcher_se",
   "version": "1.0.0",
   "description": "Scrape all Untappd checkins for a user using session cookies",
   "type": "module",
