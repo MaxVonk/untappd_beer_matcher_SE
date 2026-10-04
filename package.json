@@ -1,0 +1,20 @@
+{
+  "name": "untapped_beer_matcher_se",
+  "version": "1.0.0",
+  "description": "Scrape all Untappd checkins for a user using session cookies",
+  "type": "module",
+  "main": "scrape.mjs",
+  "scripts": {
+    "start": "node server.mjs",
+    "cookie": "node scripts/fetch-untappd-cookie.mjs",
+    "scrape": "node scrape.mjs",
+    "scrape:full": "node scrape.mjs --full",
+    "scrape:stats": "node scrape.mjs --stats"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0",
+    "dotenv": "^16.4.7",
+    "express": "^5.2.1",
+    "puppeteer-core": "^25.12.0"
+  }
+}
