@@ -3,6 +3,7 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { getEnvStatus, updateEnvVariables, verifyUntappdCredentials } from './lib/auth-service.mjs';
+import { scrapePublicProfile } from './lib/public-user-scraper.mjs';
 import { isScraperRunning, getCurrentRunType, startScraper, stopScraper } from './lib/scraper-runner.mjs';
 import { matchSystembolaget } from './lib/systembolaget-matcher.mjs';
 import { syncSystembolagetCatalog } from './lib/systembolaget-sync.mjs';
@@ -146,6 +147,56 @@ app.get('/api/status', (req, res) => {
 });
 
 // Authentication endpoints
+app.post('/api/auth/quick-connect', async (req, res) => {
+  try {
+    const { username } = req.body;
+    if (!username || !username.trim()) {
+      return res.status(400).json({ ok: false, error: 'Please enter an Untappd username.' });
+    }
+    const cleanUser = username.trim();
+    broadcastLog(`⚡ Connecting via Quick Sync for @${cleanUser}...`, 'info');
+
+    // Fetch public profile and recent check-ins
+    const scrapeResult = await scrapePublicProfile(cleanUser, {
+      logger: (msg) => broadcastLog(msg, 'info'),
+    });
+
+    // Save username in .env
+    updateEnvVariables({
+      UNTAPPD_USER: cleanUser,
+    });
+    process.env.UNTAPPD_USER = cleanUser;
+
+    broadcastLog(`✅ Connected @${cleanUser} in Quick Sync mode! Found ${scrapeResult.recentCount} recent check-ins.`, 'success');
+
+    // Automatically match against Systembolaget if catalog exists
+    const sbPath = fs.existsSync(path.join(OUTPUT_DIR, 'systembolaget_products.json'))
+      ? path.join(OUTPUT_DIR, 'systembolaget_products.json')
+      : path.join(OUTPUT_DIR, 'systembolaget_produkter.json');
+
+    if (fs.existsSync(sbPath)) {
+      try {
+        broadcastLog('🎯 Matching recent check-ins with Systembolaget...', 'info');
+        const matchResult = await matchSystembolaget({
+          username: cleanUser,
+          logger: (msg) => broadcastLog(msg, 'info'),
+        });
+        broadcastLog(`🎉 Matched ${matchResult.matchedCount} of ${matchResult.totalCheckins} check-ins to Systembolaget!`, 'success');
+        broadcastEvent('pipeline_complete', { matchResult, stats: getStats() });
+      } catch (err) {
+        broadcastLog(`Matching note: ${err.message}`, 'warn');
+      }
+    }
+
+    const stats = getStats();
+    broadcastEvent('status', stats);
+    res.json({ ok: true, scrapeResult, stats });
+  } catch (err) {
+    broadcastLog(`Quick Connect failed: ${err.message}`, 'error');
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 app.post('/api/auth/save-manual', (req, res) => {
   try {
     const { username, cookie, mapboxKey } = req.body;
@@ -168,7 +219,7 @@ app.post('/api/auth/verify', async (req, res) => {
   try {
     const env = getEnvStatus();
     const username = req.body.username || env.username;
-    const cookie = req.body.cookie || env.cookie;
+    const cookie = req.body.cookie !== undefined ? req.body.cookie : env.cookie;
     const result = await verifyUntappdCredentials(cookie, username);
     if (result.ok) {
       broadcastLog(`✅ ${result.message}`, 'success');
@@ -218,19 +269,26 @@ app.post('/api/pipeline/start', async (req, res) => {
       await syncSystembolagetCatalog({ logger: (msg) => broadcastLog(msg, 'info') });
     }
 
-    // 2. Run incremental scrape
-    broadcastLog('⚡ Scraping new Untappd check-ins...', 'info');
-    await new Promise((resolve, reject) => {
-      startScraper({
-        mode: req.body.mode || 'incremental',
-        includeFlavors: req.body.includeFlavors || false,
-        onLog: (line) => broadcastLog(line, 'info'),
-        onExit: (code) => {
-          if (code === 0) resolve();
-          else reject(new Error(`Scraper finished with code ${code}`));
-        },
+    // 2. Scrape Untappd check-ins
+    if (env.hasCookie) {
+      broadcastLog(`⚡ Scraping Untappd check-ins (Full mode: ${req.body.mode || 'incremental'})...`, 'info');
+      await new Promise((resolve, reject) => {
+        startScraper({
+          mode: req.body.mode || 'incremental',
+          includeFlavors: req.body.includeFlavors || false,
+          onLog: (line) => broadcastLog(line, 'info'),
+          onExit: (code) => {
+            if (code === 0) resolve();
+            else reject(new Error(`Scraper finished with code ${code}`));
+          },
+        });
       });
-    });
+    } else {
+      broadcastLog(`⚡ Scraping recent Untappd check-ins (Quick mode for public profile @${env.username})...`, 'info');
+      await scrapePublicProfile(env.username, {
+        logger: (line) => broadcastLog(line, 'info'),
+      });
+    }
 
     // 3. Automatically run matching immediately
     broadcastLog('🎯 Automatically matching beers with Systembolaget catalog...', 'info');
@@ -253,9 +311,26 @@ app.post('/api/pipeline/start', async (req, res) => {
 });
 
 // Scraper endpoints
-app.post('/api/scrape/start', (req, res) => {
+app.post('/api/scrape/start', async (req, res) => {
   try {
     const { mode = 'incremental', includeFlavors = false } = req.body;
+    const env = getEnvStatus();
+
+    if (mode === 'quick' || !env.hasCookie) {
+      broadcastLog(`[System] Starting Quick public scrape for @${env.username}...`, 'info');
+      scrapePublicProfile(env.username, {
+        logger: (line) => broadcastLog(line, 'info'),
+      })
+        .then((result) => {
+          broadcastLog(`Quick scrape completed! Fetched ${result.recentCount} check-ins.`, 'success');
+          broadcastEvent('status', getStats());
+        })
+        .catch((err) => {
+          broadcastLog(`Quick scrape error: ${err.message}`, 'error');
+        });
+      return res.json({ ok: true, message: 'Quick scrape started' });
+    }
+
     startScraper({
       mode,
       includeFlavors,
@@ -265,11 +340,9 @@ app.post('/api/scrape/start', (req, res) => {
         broadcastEvent('status', getStats());
       },
     });
-
-    broadcastEvent('status', getStats());
     res.json({ ok: true });
   } catch (err) {
-    res.status(400).json({ ok: false, error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 

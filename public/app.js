@@ -13,7 +13,17 @@ const TRANSLATIONS = {
     cardMatchedTitle: 'Matched Beers',
     clickToBrowse: 'Click to browse findings ➔',
     gateTitle: 'Connect Your Untappd Account',
-    gateDesc: 'Enter your Untappd username and session cookie to sync check-ins and match beers with Systembolaget.',
+    gateDesc: 'Choose how you would like to connect your Untappd account:',
+    quickBadge: '⚡ Option 1 — Fastest (No Cookie Required)',
+    quickTitle: 'Quick Sync with Username',
+    quickDesc: 'Instant setup. Scrapes your recent check-ins from your public Untappd profile and matches with Systembolaget in seconds.',
+    btnQuickConnect: 'Connect & Quick Sync',
+    gateOr: '— OR —',
+    fullBadge: '🍺 Option 2 — Full Lifetime History',
+    fullTitle: 'Full Sync (All Past Beers + Flavors)',
+    fullDesc: 'Paginates through your entire Untappd history (500+ beers). Requires your session cookie once.',
+    btnShowCookie: '▼ Show Cookie Setup',
+    btnHideCookie: '▲ Hide Cookie Setup',
     guideTitle: 'How to get your session cookie in 3 simple steps:',
     step1Title: 'Log in to Untappd',
     step1Desc: 'Open <a href="https://untappd.com" target="_blank" rel="noopener">untappd.com</a> in your regular browser (Chrome, Edge, Firefox, Safari) and make sure you are signed in.',
@@ -25,9 +35,9 @@ const TRANSLATIONS = {
     labelUsername: 'Untappd Username:',
     labelCookie: 'Cookie Header String:',
     btnPasteClipboard: '📋 Paste from Clipboard',
-    btnSaveCreds: 'Save Credentials',
+    btnSaveCreds: 'Save Full Credentials',
     btnTestConn: 'Test Connection',
-    loginHintDefault: '🔒 Credentials are saved locally in your <code>.env</code> file on your computer and never shared.',
+    loginHintDefault: '🔒 Credentials and preferences are stored locally in your <code>.env</code> file on your computer and never shared.',
     heroBadge: '⚡ 1-Click Automated Sync',
     heroTitle: 'Sync & Match Untappd with Systembolaget',
     heroDesc: 'Scrapes your latest check-ins from Untappd and automatically matches them with Systembolaget\'s current catalog in one step.',
@@ -41,6 +51,7 @@ const TRANSLATIONS = {
     advSbTitle: 'Systembolaget & Export',
     advSbDesc: 'Manually refresh catalog or re-run matcher.',
     labelScrapeMode: 'Scrape Mode:',
+    optQuick: '⚡ Quick Sync (Recent check-ins - No cookie required)',
     optIncremental: 'Incremental (New check-ins only - Fastest)',
     optFull: 'Full Scrape (Re-fetch all check-ins)',
     optStats: 'Update Stats (Refresh ratings & beer stats)',
@@ -87,7 +98,17 @@ const TRANSLATIONS = {
     cardMatchedTitle: 'Matchade öl',
     clickToBrowse: 'Klicka för att bläddra ➔',
     gateTitle: 'Anslut ditt Untappd-konto',
-    gateDesc: 'Fyll i ditt Untappd-användarnamn och session-cookie för att synka incheckningar och matcha öl mot Systembolaget.',
+    gateDesc: 'Välj hur du vill ansluta ditt Untappd-konto:',
+    quickBadge: '⚡ Alternativ 1 — Snabbast (Ingen cookie krävs)',
+    quickTitle: 'Snabbsynk med användarnamn',
+    quickDesc: 'Direktstart. Skrapar dina senaste incheckningar från din öppna Untappd-profil och matchar mot Systembolaget på några sekunder.',
+    btnQuickConnect: 'Anslut & snabbsynka',
+    gateOr: '— ELLER —',
+    fullBadge: '🍺 Alternativ 2 — Fullständig historik',
+    fullTitle: 'Full synk (Alla tidigare öl + smakprofiler)',
+    fullDesc: 'Hämtar hela ditt Untappd-arkiv (500+ öl). Kräver din session-cookie en gång.',
+    btnShowCookie: '▼ Visa cookie-guide & formulär',
+    btnHideCookie: '▲ Dölj cookie-formulär',
     guideTitle: 'Så hämtar du din session-cookie i 3 enkla steg:',
     step1Title: 'Logga in på Untappd',
     step1Desc: 'Öppna <a href="https://untappd.com" target="_blank" rel="noopener">untappd.com</a> i din vanliga webbläsare (Chrome, Edge, Firefox, Safari) och se till att du är inloggad.',
@@ -99,7 +120,7 @@ const TRANSLATIONS = {
     labelUsername: 'Untappd användarnamn:',
     labelCookie: 'Cookie-sträng:',
     btnPasteClipboard: '📋 Klistra in från urklipp',
-    btnSaveCreds: 'Spara uppgifter',
+    btnSaveCreds: 'Spara fullständiga uppgifter',
     btnTestConn: 'Testa anslutning',
     loginHintDefault: '🔒 Uppgifterna sparas lokalt i din <code>.env</code>-fil på datorn och delas aldrig externt.',
     heroBadge: '⚡ Automatisk 1-klicks-synk',
@@ -115,6 +136,7 @@ const TRANSLATIONS = {
     advSbTitle: 'Systembolaget & Export',
     advSbDesc: 'Uppdatera sortiment manuellt eller kör endast matchning.',
     labelScrapeMode: 'Skrapningsläge:',
+    optQuick: '⚡ Snabbsynk (Senaste incheckningar — Ingen cookie krävs)',
     optIncremental: 'Inkrementell (Endast nya - Snabbast)',
     optFull: 'Full skrapning (Hämta alla incheckningar)',
     optStats: 'Uppdatera statistik (Betyg & statistik)',
@@ -188,6 +210,11 @@ const globalStatusText = document.getElementById('globalStatusText');
 const gateManualAuthArea = document.getElementById('gateManualAuthArea');
 const gateInputUsername = document.getElementById('gateInputUsername');
 const gateInputCookie = document.getElementById('gateInputCookie');
+const btnGateQuickConnect = document.getElementById('btnGateQuickConnect');
+const btnToggleFullSync = document.getElementById('btnToggleFullSync');
+const btnToggleFullDetails = document.getElementById('btnToggleFullDetails');
+const fullSyncDetailsArea = document.getElementById('fullSyncDetailsArea');
+const txtToggleFull = document.getElementById('txtToggleFull');
 const btnPasteClipboard = document.getElementById('btnPasteClipboard');
 const btnGateSaveManual = document.getElementById('btnGateSaveManual');
 const btnGateVerify = document.getElementById('btnGateVerify');
@@ -378,7 +405,10 @@ function updateUI(status) {
 
   if (isConnected) {
     dot.className = 'badge-dot connected';
-    globalStatusText.textContent = `${currentLang === 'sv' ? 'Ansluten' : 'Connected'}: @${status.untappd.username}`;
+    const modeBadge = status.untappd.isQuickMode
+      ? (currentLang === 'sv' ? ' (Snabbsynk)' : ' (Quick Sync)')
+      : (currentLang === 'sv' ? ' (Full synk)' : ' (Full Sync)');
+    globalStatusText.textContent = `${currentLang === 'sv' ? 'Ansluten' : 'Connected'}: @${status.untappd.username}${modeBadge}`;
     mainNavTabs.style.display = 'flex';
     btnLogout.style.display = 'inline-flex';
 
@@ -389,7 +419,11 @@ function updateUI(status) {
 
     valUntappdUser.textContent = `@${status.untappd.username}`;
     valUntappdUser.style.color = 'var(--accent-dark)';
-    subUntappdStatus.textContent = currentLang === 'sv' ? 'Aktiv session' : 'Active session';
+    if (status.untappd.isQuickMode) {
+      subUntappdStatus.textContent = currentLang === 'sv' ? '⚡ Snabbsynk (Öppen profil)' : '⚡ Quick Sync (Public Profile)';
+    } else {
+      subUntappdStatus.textContent = currentLang === 'sv' ? '🍺 Full synk (Autentiserad)' : '🍺 Full Sync (Authenticated)';
+    }
   } else {
     dot.className = 'badge-dot';
     globalStatusText.textContent = currentLang === 'sv' ? 'Untappd ej ansluten' : 'Untappd Disconnected';
@@ -664,6 +698,84 @@ btnRunMatcher.addEventListener('click', async () => {
 // ========================================================
 // LOGIN GATE ACTIONS
 // ========================================================
+if (btnGateQuickConnect) {
+  btnGateQuickConnect.addEventListener('click', async () => {
+    const username = gateInputUsername.value.trim();
+    if (!username) {
+      showToast(
+        currentLang === 'sv' ? 'Användarnamn saknas' : 'Missing Username',
+        currentLang === 'sv' ? 'Fyll i ditt Untappd användarnamn.' : 'Please enter your Untappd username.',
+        'warn'
+      );
+      gateInputUsername.focus();
+      return;
+    }
+
+    btnGateQuickConnect.disabled = true;
+    showToast(
+      currentLang === 'sv' ? 'Ansluter snabbsynk' : 'Connecting Quick Sync',
+      currentLang === 'sv' ? `Hämtar profil och senaste öl för @${username}...` : `Fetching public profile & recent check-ins for @${username}...`,
+      'info',
+      8000
+    );
+
+    try {
+      const res = await fetch('/api/auth/quick-connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        showToast(
+          currentLang === 'sv' ? 'Ansluten!' : 'Connected!',
+          currentLang === 'sv'
+            ? `@${username} ansluten i Snabbsynk-läge! Hämtade ${data.scrapeResult?.recentCount || 0} senaste öl.`
+            : `Connected @${username} via Quick Sync! Fetched ${data.scrapeResult?.recentCount || 0} recent beers.`,
+          'success',
+          5000
+        );
+        fetchStatus();
+      } else {
+        showToast(
+          currentLang === 'sv' ? 'Anslutningsfel' : 'Connection Error',
+          data.error || 'Failed to connect.',
+          'error',
+          7000
+        );
+      }
+    } catch (err) {
+      showToast('Quick Connect Failed', err.message, 'error');
+    } finally {
+      btnGateQuickConnect.disabled = false;
+    }
+  });
+}
+
+if (btnToggleFullSync || btnToggleFullDetails) {
+  const toggleHandler = () => {
+    if (!fullSyncDetailsArea) return;
+    const isHidden = fullSyncDetailsArea.style.display === 'none';
+    fullSyncDetailsArea.style.display = isHidden ? 'block' : 'none';
+    if (txtToggleFull) {
+      txtToggleFull.textContent = isHidden ? t('btnHideCookie') : t('btnShowCookie');
+    }
+  };
+  if (btnToggleFullSync) {
+    btnToggleFullSync.addEventListener('click', (e) => {
+      if (fullSyncDetailsArea && !fullSyncDetailsArea.contains(e.target)) {
+        toggleHandler();
+      }
+    });
+  }
+  if (btnToggleFullDetails) {
+    btnToggleFullDetails.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleHandler();
+    });
+  }
+}
+
 if (btnPasteClipboard) {
   btnPasteClipboard.addEventListener('click', async () => {
     try {

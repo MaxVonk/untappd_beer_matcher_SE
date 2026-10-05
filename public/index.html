@@ -73,75 +73,115 @@
       </div>
       <h2 data-i18n="gateTitle">Connect Your Untappd Account</h2>
       <p class="gate-desc" data-i18n="gateDesc">
-        Enter your Untappd username and session cookie to sync check-ins and match beers with Systembolaget.
+        Choose how you would like to connect your Untappd account:
       </p>
 
-      <!-- 3-STEP VISUAL COOKIE GUIDE -->
-      <div class="cookie-guide-box">
-        <div class="cookie-guide-header">
-          <span class="guide-header-icon">🔑</span>
-          <span class="guide-header-title" data-i18n="guideTitle">How to get your session cookie in 3 simple steps:</span>
-        </div>
-        
-        <div class="guide-steps-list">
-          <div class="guide-step-item">
-            <div class="step-badge-num">1</div>
-            <div class="step-content">
-              <strong data-i18n="step1Title">Log in to Untappd</strong>
-              <p data-i18n-html="step1Desc">Open <a href="https://untappd.com" target="_blank" rel="noopener">untappd.com</a> in your regular browser (Chrome, Edge, Firefox, Safari) and make sure you are signed in.</p>
-            </div>
-          </div>
-
-          <div class="guide-step-item">
-            <div class="step-badge-num">2</div>
-            <div class="step-content">
-              <strong data-i18n="step2Title">Open Developer Tools (F12)</strong>
-              <p data-i18n-html="step2Desc">Press <kbd>F12</kbd> (or right-click ➔ <em>Inspect</em>), switch to the <b>Network</b> tab, and refresh the page (<kbd>F5</kbd>).</p>
-            </div>
-          </div>
-
-          <div class="guide-step-item">
-            <div class="step-badge-num">3</div>
-            <div class="step-content">
-              <strong data-i18n="step3Title">Copy the Cookie Header</strong>
-              <p data-i18n-html="step3Desc">Click the top request (e.g. <code>home</code>), scroll to <b>Request Headers</b>, right-click <code>Cookie:</code> and select <b>Copy value</b>.</p>
-            </div>
-          </div>
+      <!-- OPTION 1: QUICK CONNECT (USERNAME ONLY) -->
+      <div class="quick-connect-card">
+        <div class="quick-card-header">
+          <span class="quick-badge" data-i18n="quickBadge">⚡ Option 1 — Fastest (No Cookie Required)</span>
+          <h3 data-i18n="quickTitle">Quick Sync with Username</h3>
+          <p class="quick-desc" data-i18n="quickDesc">
+            Instant setup. Scrapes your recent check-ins from your public Untappd profile and matches with Systembolaget in seconds.
+          </p>
         </div>
 
-        <div class="guide-ext-tip">
-          <span class="tip-sparkle">💡</span>
-          <span data-i18n-html="guideTip"><b>Alternative:</b> Use a browser extension like <a href="https://cookie-editor.com" target="_blank" rel="noopener">Cookie-Editor</a> to export the cookie in 1 click.</span>
-        </div>
-      </div>
-
-      <!-- Credentials Form in Login Gate -->
-      <div id="gateManualAuthArea" class="manual-auth-box gate-manual-box">
-        <div class="form-row">
+        <div class="form-row" style="margin-bottom: 0;">
           <label for="gateInputUsername" data-i18n="labelUsername">Untappd Username:</label>
-          <input type="text" id="gateInputUsername" placeholder="e.g. your_username" class="form-input" autocomplete="username">
-        </div>
-        <div class="form-row">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <label for="gateInputCookie" data-i18n="labelCookie" style="margin-bottom: 0;">Cookie Header String:</label>
-            <button type="button" id="btnPasteClipboard" class="btn btn-secondary btn-small" style="padding: 4px 12px; font-size: 0.8rem; cursor: pointer;">
-              <span data-i18n="btnPasteClipboard">📋 Paste from Clipboard</span>
+          <div class="input-with-button">
+            <input type="text" id="gateInputUsername" placeholder="e.g. your_username" class="form-input" autocomplete="username">
+            <button id="btnGateQuickConnect" class="btn btn-primary btn-large" style="white-space: nowrap;">
+              <span>⚡</span> <span data-i18n="btnQuickConnect">Connect & Quick Sync</span>
             </button>
           </div>
-          <textarea id="gateInputCookie" rows="3" placeholder="Paste your untappd.com cookie string here..." class="form-textarea" spellcheck="false"></textarea>
-        </div>
-        <div class="action-row" style="margin-top: 14px; gap: 10px;">
-          <button id="btnGateSaveManual" class="btn btn-primary btn-large">
-            <span>💾</span> <span data-i18n="btnSaveCreds">Save Credentials</span>
-          </button>
-          <button id="btnGateVerify" class="btn btn-secondary btn-large">
-            <span>🔍</span> <span data-i18n="btnTestConn">Test Connection</span>
-          </button>
         </div>
       </div>
 
-      <div class="hint-text" id="gateLoginHint" data-i18n-html="loginHintDefault" style="margin-top: 18px; text-align: center;">
-        🔒 Credentials are saved locally in your <code>.env</code> file on your computer and never shared.
+      <!-- DIVIDER -->
+      <div class="gate-divider">
+        <span data-i18n="gateOr">— OR —</span>
+      </div>
+
+      <!-- OPTION 2: FULL LIFETIME SYNC (WITH COOKIE) -->
+      <div class="full-connect-card">
+        <div class="full-card-header" id="btnToggleFullSync" style="cursor: pointer;">
+          <div>
+            <span class="full-badge" data-i18n="fullBadge">🍺 Option 2 — Full Lifetime History</span>
+            <h3 data-i18n="fullTitle" style="margin: 4px 0 2px;">Full Sync (All Past Beers + Flavors)</h3>
+            <p class="full-desc" data-i18n="fullDesc">
+              Paginates through your entire Untappd history (500+ beers). Requires your session cookie once.
+            </p>
+          </div>
+          <button type="button" class="btn btn-secondary btn-small" id="btnToggleFullDetails" style="white-space: nowrap;">
+            <span id="txtToggleFull" data-i18n="btnShowCookie">▼ Show Cookie Setup</span>
+          </button>
+        </div>
+
+        <div id="fullSyncDetailsArea" style="display: none; margin-top: 18px;">
+          <!-- 3-STEP VISUAL COOKIE GUIDE -->
+          <div class="cookie-guide-box">
+            <div class="cookie-guide-header">
+              <span class="guide-header-icon">🔑</span>
+              <span class="guide-header-title" data-i18n="guideTitle">How to get your session cookie in 3 simple steps:</span>
+            </div>
+            
+            <div class="guide-steps-list">
+              <div class="guide-step-item">
+                <div class="step-badge-num">1</div>
+                <div class="step-content">
+                  <strong data-i18n="step1Title">Log in to Untappd</strong>
+                  <p data-i18n-html="step1Desc">Open <a href="https://untappd.com" target="_blank" rel="noopener">untappd.com</a> in your regular browser (Chrome, Edge, Firefox, Safari) and make sure you are signed in.</p>
+                </div>
+              </div>
+
+              <div class="guide-step-item">
+                <div class="step-badge-num">2</div>
+                <div class="step-content">
+                  <strong data-i18n="step2Title">Open Developer Tools (F12)</strong>
+                  <p data-i18n-html="step2Desc">Press <kbd>F12</kbd> (or right-click ➔ <em>Inspect</em>), switch to the <b>Network</b> tab, and refresh the page (<kbd>F5</kbd>).</p>
+                </div>
+              </div>
+
+              <div class="guide-step-item">
+                <div class="step-badge-num">3</div>
+                <div class="step-content">
+                  <strong data-i18n="step3Title">Copy the Cookie Header</strong>
+                  <p data-i18n-html="step3Desc">Click the top request (e.g. <code>home</code>), scroll to <b>Request Headers</b>, right-click <code>Cookie:</code> and select <b>Copy value</b>.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="guide-ext-tip">
+              <span class="tip-sparkle">💡</span>
+              <span data-i18n-html="guideTip"><b>Alternative:</b> Use a browser extension like <a href="https://cookie-editor.com" target="_blank" rel="noopener">Cookie-Editor</a> to export the cookie in 1 click.</span>
+            </div>
+          </div>
+
+          <!-- Credentials Form in Login Gate -->
+          <div id="gateManualAuthArea" class="manual-auth-box gate-manual-box">
+            <div class="form-row">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <label for="gateInputCookie" data-i18n="labelCookie" style="margin-bottom: 0;">Cookie Header String:</label>
+                <button type="button" id="btnPasteClipboard" class="btn btn-secondary btn-small" style="padding: 4px 12px; font-size: 0.8rem; cursor: pointer;">
+                  <span data-i18n="btnPasteClipboard">📋 Paste from Clipboard</span>
+                </button>
+              </div>
+              <textarea id="gateInputCookie" rows="3" placeholder="Paste your untappd.com cookie string here..." class="form-textarea" spellcheck="false"></textarea>
+            </div>
+            <div class="action-row" style="margin-top: 14px; gap: 10px;">
+              <button id="btnGateSaveManual" class="btn btn-success btn-large">
+                <span>💾</span> <span data-i18n="btnSaveCreds">Save Full Credentials</span>
+              </button>
+              <button id="btnGateVerify" class="btn btn-secondary btn-large">
+                <span>🔍</span> <span data-i18n="btnTestConn">Test Connection</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hint-text" id="gateLoginHint" data-i18n-html="loginHintDefault" style="margin-top: 20px; text-align: center;">
+        🔒 Credentials and preferences are stored locally in your <code>.env</code> file on your computer and never shared.
       </div>
     </div>
 
@@ -231,6 +271,7 @@
             <div class="form-row">
               <label for="scrapeMode" data-i18n="labelScrapeMode">Scrape Mode:</label>
               <select id="scrapeMode" class="form-select">
+                <option value="quick" data-i18n="optQuick">⚡ Quick Sync (Recent check-ins - No cookie required)</option>
                 <option value="incremental" selected data-i18n="optIncremental">Incremental (New check-ins only - Fastest)</option>
                 <option value="full" data-i18n="optFull">Full Scrape (Re-fetch all check-ins)</option>
                 <option value="stats" data-i18n="optStats">Update Stats (Refresh ratings & beer stats)</option>
