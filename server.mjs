@@ -451,6 +451,9 @@ app.get('/api/beers', (req, res) => {
         if (currentRating > existing.rating) {
           existing.rating = currentRating;
         }
+        if (item.tastedAt) {
+          existing.tastedAt = Math.max(existing.tastedAt || 0, item.tastedAt);
+        }
       }
     }
 

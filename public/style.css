@@ -66,8 +66,8 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: nowrap;
-  gap: 20px;
+  flex-wrap: wrap;
+  gap: 16px 24px;
   margin-bottom: 24px;
   box-shadow: var(--shadow-sm);
   border-top: 4px solid var(--accent);
@@ -77,8 +77,7 @@ body {
   display: flex;
   align-items: center;
   gap: 14px;
-  min-width: 0;
-  flex-shrink: 1;
+  flex-shrink: 0;
 }
 
 .logo-text-wrap {
@@ -107,9 +106,16 @@ h1 {
 .subtitle {
   font-size: 0.875rem;
   color: var(--text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  line-height: 1.4;
+}
+
+.date-chip {
+  background-color: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid var(--border);
+  font-size: 0.775rem;
+  cursor: default;
 }
 
 .header-right {

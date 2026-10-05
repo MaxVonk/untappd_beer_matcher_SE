@@ -1071,6 +1071,20 @@ function renderBeersGrid() {
       ? `<span class="metric-chip price-chip">${beer.price.toFixed(2)} kr</span>`
       : '';
 
+    const dateFormatted = beer.tastedAt
+      ? new Date(beer.tastedAt).toLocaleDateString(currentLang === 'sv' ? 'sv-SE' : 'en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+        })
+      : null;
+
+    const fullTimestampStr = beer.tastedAt ? new Date(beer.tastedAt).toLocaleString() : '';
+
+    const dateHtml = dateFormatted
+      ? `<span class="metric-chip date-chip" title="${currentLang === 'sv' ? 'Incheckad' : 'Checked in'}: ${fullTimestampStr}">📅 ${dateFormatted}</span>`
+      : '';
+
     const sbButtonHtml = beer.isMatched
       ? `<a href="${beer.sbUrl}" target="_blank" rel="noopener noreferrer" class="btn-sb-link">
            <span>🛒</span> ${t('btnViewOnSb')}
@@ -1108,6 +1122,7 @@ function renderBeersGrid() {
         ${abvHtml}
         ${volHtml}
         ${sortimentHtml}
+        ${dateHtml}
       </div>
 
       <div class="beer-ratings-row">
