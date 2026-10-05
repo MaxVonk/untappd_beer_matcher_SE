@@ -95,6 +95,17 @@
             </button>
           </div>
         </div>
+
+        <!-- Live Quick Connect Progress & Counter -->
+        <div id="gateQuickProgress" class="gate-quick-progress" style="display: none;">
+          <span class="status-pulse-dot"></span>
+          <span id="gateQuickProgressText">Connecting...</span>
+          <div id="gateLiveCounter" class="live-counter-pill" style="display: none; margin-left: auto;">
+            <span class="counter-beer-icon">🍺</span>
+            <strong id="gateCounterValue">0</strong>
+            <span data-i18n="beersUnit">beers</span>
+          </div>
+        </div>
       </div>
 
       <!-- DIVIDER -->
@@ -211,8 +222,18 @@
 
           <!-- Live Pipeline Progress Banner -->
           <div id="pipelineLiveBanner" class="inline-status-banner hero-progress-banner">
-            <span class="status-pulse-dot"></span>
-            <span id="pipelineLiveText" data-i18n="pipelineReady">Ready to sync. Click "Sync & Match Now".</span>
+            <div class="pipeline-status-line">
+              <span class="status-pulse-dot"></span>
+              <span id="pipelineLiveText" data-i18n="pipelineReady">Ready to sync. Click "Sync & Match Now".</span>
+            </div>
+            <!-- Live Scrape Counter Badge -->
+            <div id="liveScrapeCounter" class="live-counter-pill" style="display: none;">
+              <span class="counter-beer-icon">🍺</span>
+              <span class="counter-label-prefix" data-i18n="beersScrapedPrefix">Scraped:</span>
+              <strong id="counterValue">0</strong>
+              <span id="counterTotalWrap" style="display: none;">/ <span id="counterTotal">0</span></span>
+              <span id="counterUnit" data-i18n="beersUnit">beers</span>
+            </div>
           </div>
         </div>
       </section>

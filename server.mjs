@@ -159,6 +159,7 @@ app.post('/api/auth/quick-connect', async (req, res) => {
     // Fetch public profile and recent check-ins
     const scrapeResult = await scrapePublicProfile(cleanUser, {
       logger: (msg) => broadcastLog(msg, 'info'),
+      onProgress: (p) => broadcastEvent('scrape_progress', p),
     });
 
     // Save username in .env
@@ -277,6 +278,7 @@ app.post('/api/pipeline/start', async (req, res) => {
           mode: req.body.mode || 'incremental',
           includeFlavors: req.body.includeFlavors || false,
           onLog: (line) => broadcastLog(line, 'info'),
+          onProgress: (p) => broadcastEvent('scrape_progress', p),
           onExit: (code) => {
             if (code === 0) resolve();
             else reject(new Error(`Scraper finished with code ${code}`));
@@ -287,6 +289,7 @@ app.post('/api/pipeline/start', async (req, res) => {
       broadcastLog(`⚡ Scraping recent Untappd check-ins (Quick mode for public profile @${env.username})...`, 'info');
       await scrapePublicProfile(env.username, {
         logger: (line) => broadcastLog(line, 'info'),
+        onProgress: (p) => broadcastEvent('scrape_progress', p),
       });
     }
 
@@ -320,6 +323,7 @@ app.post('/api/scrape/start', async (req, res) => {
       broadcastLog(`[System] Starting Quick public scrape for @${env.username}...`, 'info');
       scrapePublicProfile(env.username, {
         logger: (line) => broadcastLog(line, 'info'),
+        onProgress: (p) => broadcastEvent('scrape_progress', p),
       })
         .then((result) => {
           broadcastLog(`Quick scrape completed! Fetched ${result.recentCount} check-ins.`, 'success');
@@ -335,6 +339,7 @@ app.post('/api/scrape/start', async (req, res) => {
       mode,
       includeFlavors,
       onLog: (line) => broadcastLog(line, 'info'),
+      onProgress: (p) => broadcastEvent('scrape_progress', p),
       onExit: (code) => {
         broadcastLog(`Scrape finished with status code ${code}.`, code === 0 ? 'success' : 'warn');
         broadcastEvent('status', getStats());

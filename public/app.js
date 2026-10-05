@@ -86,6 +86,9 @@ const TRANSLATIONS = {
     noRating: 'No Rating',
     showingBeers: 'Showing {count} of {total} beers',
     btnLogout: '🚪 Log out',
+    beersScrapedPrefix: 'Scraped:',
+    beersUnit: 'beers',
+    beersScraped: 'beers scraped',
   },
   sv: {
     appTitle: 'Untappd & Systembolaget Hub',
@@ -171,6 +174,9 @@ const TRANSLATIONS = {
     noRating: 'Inget betyg',
     showingBeers: 'Visar {count} av {total} öl',
     btnLogout: '🚪 Logga ut',
+    beersScrapedPrefix: 'Skrapade:',
+    beersUnit: 'öl',
+    beersScraped: 'öl skrapade',
   },
 };
 
@@ -219,6 +225,10 @@ const btnPasteClipboard = document.getElementById('btnPasteClipboard');
 const btnGateSaveManual = document.getElementById('btnGateSaveManual');
 const btnGateVerify = document.getElementById('btnGateVerify');
 const gateLoginHint = document.getElementById('gateLoginHint');
+const gateQuickProgress = document.getElementById('gateQuickProgress');
+const gateQuickProgressText = document.getElementById('gateQuickProgressText');
+const gateLiveCounter = document.getElementById('gateLiveCounter');
+const gateCounterValue = document.getElementById('gateCounterValue');
 
 // 1-Click Hero Sync Elements
 const btnOneClickSync = document.getElementById('btnOneClickSync');
@@ -226,6 +236,11 @@ const btnStopPipeline = document.getElementById('btnStopPipeline');
 const btnHeroBrowse = document.getElementById('btnHeroBrowse');
 const pipelineLiveBanner = document.getElementById('pipelineLiveBanner');
 const pipelineLiveText = document.getElementById('pipelineLiveText');
+const liveScrapeCounter = document.getElementById('liveScrapeCounter');
+const counterValue = document.getElementById('counterValue');
+const counterTotalWrap = document.getElementById('counterTotalWrap');
+const counterTotal = document.getElementById('counterTotal');
+const counterUnit = document.getElementById('counterUnit');
 
 // Status Cards Elements
 const valUntappdUser = document.getElementById('valUntappdUser');
@@ -542,6 +557,54 @@ function initSSE() {
     } catch {}
   });
 
+  eventSource.addEventListener('scrape_progress', (event) => {
+    try {
+      const data = JSON.parse(event.data);
+      const count = Number(data.count) || 0;
+
+      // 1. Update Hero live counter badge
+      if (liveScrapeCounter) {
+        liveScrapeCounter.style.display = 'inline-flex';
+      }
+      if (counterValue) {
+        counterValue.textContent = count.toLocaleString();
+        counterValue.classList.remove('pulse-number');
+        void counterValue.offsetWidth; // trigger DOM reflow to re-animate
+        counterValue.classList.add('pulse-number');
+      }
+      if (counterTotalWrap && counterTotal) {
+        if (data.total && Number(data.total) > 0 && Number(data.total) !== count) {
+          counterTotal.textContent = Number(data.total).toLocaleString();
+          counterTotalWrap.style.display = 'inline';
+        } else {
+          counterTotalWrap.style.display = 'none';
+        }
+      }
+
+      // 2. Real-time update to Untappd Check-ins card
+      if (valCheckins && count > 0) {
+        valCheckins.textContent = count.toLocaleString();
+        valCheckins.classList.remove('pulse-number');
+        void valCheckins.offsetWidth;
+        valCheckins.classList.add('pulse-number');
+      }
+
+      // 3. Status text update if provided
+      if (pipelineLiveText && data.statusText) {
+        pipelineLiveText.textContent = data.statusText;
+      }
+
+      // 4. Update login gate quick progress if active
+      if (gateQuickProgress && gateQuickProgress.style.display !== 'none') {
+        if (gateLiveCounter) gateLiveCounter.style.display = 'inline-flex';
+        if (gateCounterValue) gateCounterValue.textContent = count.toLocaleString();
+        if (gateQuickProgressText && data.statusText) {
+          gateQuickProgressText.textContent = data.statusText;
+        }
+      }
+    } catch {}
+  });
+
   eventSource.addEventListener('status', (event) => {
     try {
       const data = JSON.parse(event.data);
@@ -563,6 +626,10 @@ function initSSE() {
 // 1-CLICK AUTOMATED SYNC
 // ========================================================
 btnOneClickSync.addEventListener('click', async () => {
+  if (liveScrapeCounter) liveScrapeCounter.style.display = 'none';
+  if (counterValue) counterValue.textContent = '0';
+  if (counterTotalWrap) counterTotalWrap.style.display = 'none';
+
   pipelineLiveText.textContent = currentLang === 'sv' ? 'Startar automatisk synk & matchning...' : 'Starting automated sync & match...';
   pipelineLiveBanner.className = 'inline-status-banner hero-progress-banner running';
   btnOneClickSync.style.display = 'none';
@@ -633,6 +700,12 @@ btnToggleAdvanced.addEventListener('click', () => {
 btnManualScrape.addEventListener('click', async () => {
   const mode = scrapeMode.value;
   const includeFlavors = chkFlavors.checked;
+
+  if (liveScrapeCounter) liveScrapeCounter.style.display = 'none';
+  if (counterValue) counterValue.textContent = '0';
+  if (counterTotalWrap) counterTotalWrap.style.display = 'none';
+  pipelineLiveBanner.className = 'inline-status-banner hero-progress-banner running';
+  pipelineLiveText.textContent = currentLang === 'sv' ? `Startar skrapare (${mode})...` : `Starting scraper (${mode})...`;
 
   try {
     const res = await fetch('/api/scrape/start', {
@@ -712,6 +785,13 @@ if (btnGateQuickConnect) {
     }
 
     btnGateQuickConnect.disabled = true;
+    if (gateQuickProgress) {
+      gateQuickProgress.style.display = 'flex';
+      gateQuickProgressText.textContent = currentLang === 'sv' ? `Hämtar profil & öl för @${username}...` : `Fetching profile & beers for @${username}...`;
+    }
+    if (gateLiveCounter) gateLiveCounter.style.display = 'none';
+    if (gateCounterValue) gateCounterValue.textContent = '0';
+
     showToast(
       currentLang === 'sv' ? 'Ansluter snabbsynk' : 'Connecting Quick Sync',
       currentLang === 'sv' ? `Hämtar profil och senaste öl för @${username}...` : `Fetching public profile & recent check-ins for @${username}...`,
@@ -748,6 +828,9 @@ if (btnGateQuickConnect) {
       showToast('Quick Connect Failed', err.message, 'error');
     } finally {
       btnGateQuickConnect.disabled = false;
+      setTimeout(() => {
+        if (gateQuickProgress) gateQuickProgress.style.display = 'none';
+      }, 3500);
     }
   });
 }
